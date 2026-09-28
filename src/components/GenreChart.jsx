@@ -6,7 +6,7 @@ function GenreChart({ tracks = [] }) {
         return acc;
     }, {});
 
-    const entries = Object.entries(genreCounts).sort((a, b) => b[1] - a[1]);
+    const entries = Object.entries(genreCounts);
     const max = Math.max(...entries.map(([, c]) => c), 1);
 
     return (

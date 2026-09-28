@@ -44,7 +44,7 @@ function App() {
             <header className="dashboard-header">
                 <h1>Музичний Дашборд Jamendo</h1>
                 <p className="dashboard-subtitle">
-                    Лабораторна робота: Компонентна структура та віджети (КОП)
+                    Лабораторна робота
                 </p>
             </header>
 

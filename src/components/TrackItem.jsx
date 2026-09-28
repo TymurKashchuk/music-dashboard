@@ -6,7 +6,7 @@ function TrackItem({ track }) {
             <span className="track-num">{track.id}</span>
             <div className="track-info">
                 <strong className="track-title">{track.title}</strong>
-                <span className="track-artist">{track.artist} · {track.genre}</span>
+                <span className="track-artist">{track.artist} {track.genre}</span>
             </div>
             <span className="track-time">{formatDuration(track.duration)}</span>
         </div>
