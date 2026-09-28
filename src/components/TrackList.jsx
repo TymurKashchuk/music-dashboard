@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { formatDuration } from '../utils/formatters.js';
+import TrackFilter from './TrackFilter.jsx';
+import TrackItem from './TrackItem.jsx';
 
 function TrackList({ tracks = [], viewMode = 'comfortable' }) {
     const [selectedGenre, setSelectedGenre] = useState('Усі');
@@ -18,20 +19,11 @@ function TrackList({ tracks = [], viewMode = 'comfortable' }) {
                     <p className="widget-desc">Показано: {filteredTracks.length} з {tracks.length} треків</p>
                 </div>
 
-                <div className="filter-box">
-                    <label htmlFor="genre-select">Жанр: </label>
-                    <select
-                        id="genre-select"
-                        value={selectedGenre}
-                        onChange={(e) => setSelectedGenre(e.target.value)}
-                    >
-                        {genres.map((genre) => (
-                            <option key={genre} value={genre}>
-                                {genre}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <TrackFilter
+                    genres={genres}
+                    selectedGenre={selectedGenre}
+                    onGenreChange={setSelectedGenre}
+                />
             </div>
 
             <div className={`tracks-list ${viewMode === 'compact' ? 'compact' : ''}`}>
@@ -39,14 +31,7 @@ function TrackList({ tracks = [], viewMode = 'comfortable' }) {
                     <p className="empty-msg">Треків для обраного жанру не знайдено.</p>
                 ) : (
                     filteredTracks.map((track) => (
-                        <div key={track.id} className="track-item">
-                            <span className="track-num">{track.id}</span>
-                            <div className="track-info">
-                                <strong className="track-title">{track.title}</strong>
-                                <span className="track-artist">{track.artist} · {track.genre}</span>
-                            </div>
-                            <span className="track-time">{formatDuration(track.duration)}</span>
-                        </div>
+                        <TrackItem key={track.id} track={track} />
                     ))
                 )}
             </div>
