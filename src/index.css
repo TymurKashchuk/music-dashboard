@@ -296,3 +296,67 @@ button:disabled {
         align-items: flex-start;
     }
 }
+
+
+/* === Стилі для ЛР2: Таблиця, Статуси та Дрілдаун === */
+
+.table-wrapper {
+    overflow-x: auto;
+    margin-top: 10px;
+}
+
+.tracks-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.tracks-table th,
+.tracks-table td {
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 1px solid #2e2e2e;
+}
+
+.tracks-table th {
+    color: #a0a0a0;
+    font-size: 13px;
+    font-weight: 600;
+    user-select: none;
+    white-space: nowrap;
+    transition: color 0.15s ease;
+}
+
+.tracks-table th:hover {
+    color: #1ed760;
+}
+
+.tracks-table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.tracks-table tbody tr:hover {
+    background-color: #242424;
+}
+
+/* Компактний режим таблиці */
+.compact-table .tracks-table th,
+.compact-table .tracks-table td {
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+/* Статусні блоки (loading / error / empty) */
+.status-box {
+    text-align: center;
+    padding: 32px 20px;
+    font-size: 15px;
+    color: #a0a0a0;
+}
+
+.status-box.error {
+    border: 1px solid #b3261e;
+    background-color: #241414;
+    color: #ff8a80;
+}
