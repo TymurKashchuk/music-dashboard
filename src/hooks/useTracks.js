@@ -1,35 +1,66 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { fetchTracks } from '../services/tracksApi.js';
 
+export const RequestStatus = Object.freeze({
+    IDLE: 'idle',
+    LOADING: 'loading',
+    SUCCESS: 'success',
+    EMPTY: 'empty',
+    ERROR: 'error',
+});
+
+const initialTracksState = {
+    tracks: [],
+    status: RequestStatus.LOADING,
+    error: null,
+};
+
 export function useTracks(limit = 20) {
-    const [tracks, setTracks] = useState([]);
-    const [status, setStatus] = useState('loading');
-    const [error, setError] = useState(null);
+    const [state, setState] = useState(initialTracksState);
 
-    useEffect(() => {
-        let isActive = true;
-        async function loadTracks() {
-            try {
-                setStatus('loading');
-                setError(null);
-                const loadedTracks = await fetchTracks(limit);
+    const loadTracks = useMemo(() => {
+        return (signal) => {
+            fetchTracks(limit, signal)
+                .then((loadedTracks) => {
+                    setState({
+                        tracks: loadedTracks,
+                        status: loadedTracks.length === 0 ? RequestStatus.EMPTY : RequestStatus.SUCCESS,
+                        error: null,
+                    });
+                })
+                .catch((err) => {
+                    if (err.name === 'AbortError') return;
 
-                if (!isActive) return;
-                setTracks(loadedTracks);
-                setStatus(loadedTracks.length === 0 ? 'empty' : 'success');
-            } catch (err) {
-                if (!isActive) return;
-                setError(err.message);
-                setStatus('error');
-            }
-        }
-
-        loadTracks();
-
-        return () => {
-            isActive = false;
+                    setState({
+                        tracks: [],
+                        status: RequestStatus.ERROR,
+                        error: err.message || 'Помилка завантаження',
+                    });
+                });
         };
     }, [limit]);
 
-    return {tracks, status, error};
+    useEffect(() => {
+        const controller = new AbortController();
+
+        loadTracks(controller.signal);
+
+        return () => {
+            controller.abort();
+        };
+    }, [loadTracks]);
+
+    return {
+        tracks: state.tracks,
+        status: state.status,
+        error: state.error,
+        isLoading: state.status === RequestStatus.LOADING,
+        isSuccess: state.status === RequestStatus.SUCCESS,
+        isEmpty: state.status === RequestStatus.EMPTY,
+        isError: state.status === RequestStatus.ERROR,
+        refetch: () => {
+            setState((prev) => ({ ...prev, status: RequestStatus.LOADING, error: null }));
+            loadTracks();
+        },
+    };
 }

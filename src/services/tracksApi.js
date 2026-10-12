@@ -15,19 +15,18 @@ function extractGenre(track) {
     return firstGenre.charAt(0).toUpperCase() + firstGenre.slice(1);
 }
 
-export async function fetchTracks(limit = 20) {
+export async function fetchTracks(limit = 20, signal = null) {
     if (!CLIENT_ID) {
         throw new Error('VITE_JAMENDO_CLIENT_ID не задано у файлі .env');
     }
 
     const url = new URL(BASE_URL);
-
     url.searchParams.set('client_id', CLIENT_ID);
     url.searchParams.set('format', 'json');
     url.searchParams.set('limit', String(limit));
     url.searchParams.set('include', 'musicinfo');
 
-    const response = await fetch(url);
+    const response = await fetch(url, { signal });
 
     if (!response.ok) {
         throw new Error(`Помилка мережі Jamendo API: ${response.status} ${response.statusText}`);
@@ -43,18 +42,16 @@ export async function fetchTracks(limit = 20) {
         throw new Error('Некоректна відповідь від Jamendo API (відсутнє поле results)');
     }
 
-    return data.results.map((track) => {
-        return {
-            id: String(track.id),
-            title: track.name,
-            artist: track.artist_name,
-            album: track.album_name || 'Сингл',
-            duration: Number(track.duration) || 0,
-            genre: extractGenre(track),
-            image: track.image || track.album_image,
-            audio: track.audio,
-            audiodownload: track.audiodownload,
-            license: track.license_ccurl || '—',
-        };
-    });
+    return data.results.map((track) => ({
+        id: String(track.id),
+        title: track.name,
+        artist: track.artist_name,
+        album: track.album_name || 'Сингл',
+        duration: Number(track.duration) || 0,
+        genre: extractGenre(track),
+        image: track.image || track.album_image,
+        audio: track.audio,
+        audiodownload: track.audiodownload,
+        license: track.license_ccurl || '—',
+    }));
 }
