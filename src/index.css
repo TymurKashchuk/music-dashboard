@@ -360,3 +360,94 @@ button:disabled {
     background-color: #241414;
     color: #ff8a80;
 }
+
+
+/* Стилі для форми фільтрації */
+.filter-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.btn-reset {
+    background-color: #2a2a2a;
+    color: #ff8a80;
+    border: 1px solid #4a2828;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-reset:hover {
+    background-color: #b3261e;
+    color: #ffffff;
+    border-color: #b3261e;
+}
+
+.filter-controls {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.2fr;
+    gap: 14px;
+    align-items: flex-end;
+}
+
+@media (max-width: 768px) {
+    .filter-controls {
+        grid-template-columns: 1fr;
+    }
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #a0a0a0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-group input,
+.filter-group select {
+    background-color: #242424;
+    color: #ffffff;
+    border: 1px solid #3e3e3e;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    border-color: #1ed760;
+    box-shadow: 0 0 0 2px rgba(30, 215, 96, 0.2);
+}
+
+.filter-group input::placeholder {
+    color: #666;
+}
+
+.filter-loading-indicator {
+    color: #1ed760;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}

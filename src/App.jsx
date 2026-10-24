@@ -4,14 +4,32 @@ import Counter from './components/Counter.jsx';
 import ViewToggle from './components/ViewToggle.jsx';
 import GenreChart from './components/GenreChart.jsx';
 import TrackTable from './components/TrackTable.jsx';
+import TrackFilter from './components/TrackFilter.jsx';
 import { TracksIcon, ArtistIcon, DurationIcon } from './assets/icons.jsx';
 
 import { useTracks } from './hooks/useTracks.js';
+import { useDebounce } from './hooks/useDebounce.js';
 import { sortTracks } from './utils/sorting.js';
 import { calculateTrackStats } from './utils/formatters.js';
 
+const INITIAL_FILTERS = {
+    search: '',
+    genre: 'all',
+    limit: 20,
+    order: 'popularity_total_desc',
+};
+
 function App() {
-    const { tracks, error, isLoading, isError, isEmpty, isSuccess } = useTracks(20);
+    const [filters, setFilters] = useState(INITIAL_FILTERS);
+
+    const debouncedSearch = useDebounce(filters.search, 400);
+
+    const { tracks, error, isLoading, isError, isEmpty, isSuccess } = useTracks({
+        search: debouncedSearch,
+        genre: filters.genre,
+        limit: filters.limit,
+        order: filters.order,
+    });
 
     const [viewMode, setViewMode] = useState('comfortable');
     const [sortKey, setSortKey] = useState('title');
@@ -24,12 +42,20 @@ function App() {
 
     const stats = useMemo(() => calculateTrackStats(tracks), [tracks]);
 
+    const handleFilterChange = (field, value) => {
+        setFilters((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const handleResetFilters = () => {
+        setFilters(INITIAL_FILTERS);
+    };
+
     return (
         <div className="dashboard-container">
             <header className="dashboard-header">
                 <h1>Музичний Дашборд Jamendo</h1>
                 <p className="dashboard-subtitle">
-                    ЛР2: Робота із зовнішнім API, життєвий цикл та derived state
+                    ЛР3: Контрольовані форми, власні хуки useDebounce та useTracks
                 </p>
             </header>
 
@@ -46,7 +72,7 @@ function App() {
                 <KpiCard
                     title="Топ-виконавець"
                     value={isLoading ? '...' : stats.topArtist}
-                    change={isLoading ? '' : `${stats.topArtistCount} треки в каталозі`}
+                    change={isLoading ? '' : `${stats.topArtistCount} треки у вибірці`}
                     icon={<ArtistIcon />}
                 >
                     <span className="kpi-tag">Лідер</span>
@@ -60,6 +86,21 @@ function App() {
                 >
                     <span className="kpi-tag">Час</span>
                 </KpiCard>
+            </section>
+
+            <section className="section-filters" aria-label="Панель фільтрів">
+                <TrackFilter
+                    search={filters.search}
+                    onSearchChange={(val) => handleFilterChange('search', val)}
+                    genre={filters.genre}
+                    onGenreChange={(val) => handleFilterChange('genre', val)}
+                    limit={filters.limit}
+                    onLimitChange={(val) => handleFilterChange('limit', val)}
+                    order={filters.order}
+                    onOrderChange={(val) => handleFilterChange('order', val)}
+                    onReset={handleResetFilters}
+                    isLoading={isLoading}
+                />
             </section>
 
             <section className="section-widgets" aria-label="Інтерактивні віджети">
@@ -83,9 +124,12 @@ function App() {
                     </div>
                 )}
 
-                {isEmpty && (
+                {isEmpty && !isLoading && (
                     <div className="widget status-box">
-                        <p>Треків не знайдено.</p>
+                        <p>Треків за вашим запитом не знайдено.</p>
+                        <p style={{ marginTop: '8px', fontSize: '13px', color: '#a0a0a0' }}>
+                            Спробуйте змінити фільтри або скинути їх.
+                        </p>
                     </div>
                 )}
 
@@ -103,7 +147,7 @@ function App() {
                 )}
             </section>
 
-            {isSuccess && (
+            {isSuccess && tracks.length > 0 && (
                 <section className="section-chart" aria-label="Розподіл за жанрами">
                     <GenreChart tracks={tracks} />
                 </section>
