@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { fetchTracks } from '../services/tracksApi.js';
 
 export const RequestStatus = Object.freeze({
@@ -15,30 +15,42 @@ const initialTracksState = {
     error: null,
 };
 
-export function useTracks(limit = 20) {
+export function useTracks(params = {}) {
+    const {
+        search = '',
+        genre = 'all',
+        limit = 20,
+        order = 'popularity_total_desc',
+    } = params;
+
     const [state, setState] = useState(initialTracksState);
 
-    const loadTracks = useMemo(() => {
-        return (signal) => {
-            fetchTracks(limit, signal)
-                .then((loadedTracks) => {
-                    setState({
-                        tracks: loadedTracks,
-                        status: loadedTracks.length === 0 ? RequestStatus.EMPTY : RequestStatus.SUCCESS,
-                        error: null,
-                    });
-                })
-                .catch((err) => {
-                    if (err.name === 'AbortError') return;
+    const currentKey = `${search}_${genre}_${limit}_${order}`;
+    const [prevKey, setPrevKey] = useState(currentKey);
 
-                    setState({
-                        tracks: [],
-                        status: RequestStatus.ERROR,
-                        error: err.message || 'Помилка завантаження',
-                    });
+    if (prevKey !== currentKey) {
+        setPrevKey(currentKey);
+        setState((prev) => ({ ...prev, status: RequestStatus.LOADING, error: null }));
+    }
+
+    const loadTracks = useCallback((signal) => {
+        fetchTracks({ search, genre, limit, order }, signal)
+            .then((loadedTracks) => {
+                setState({
+                    tracks: loadedTracks,
+                    status: loadedTracks.length === 0 ? RequestStatus.EMPTY : RequestStatus.SUCCESS,
+                    error: null,
                 });
-        };
-    }, [limit]);
+            })
+            .catch((err) => {
+                if (err.name === 'AbortError') return;
+                setState({
+                    tracks: [],
+                    status: RequestStatus.ERROR,
+                    error: err.message || 'Помилка завантаження даних',
+                });
+            });
+    }, [search, genre, limit, order]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -50,11 +62,15 @@ export function useTracks(limit = 20) {
         };
     }, [loadTracks]);
 
+    const isLoading = state.status === RequestStatus.LOADING;
+
     return {
+        data: state.tracks,
         tracks: state.tracks,
         status: state.status,
         error: state.error,
-        isLoading: state.status === RequestStatus.LOADING,
+        loading: isLoading,
+        isLoading: isLoading,
         isSuccess: state.status === RequestStatus.SUCCESS,
         isEmpty: state.status === RequestStatus.EMPTY,
         isError: state.status === RequestStatus.ERROR,
