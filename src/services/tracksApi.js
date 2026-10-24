@@ -1,4 +1,5 @@
-const CLIENT_ID = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_JAMENDO_CLIENT_ID) || '75868c0d';
+const CLIENT_ID = (typeof import.meta !== 'undefined'
+    && import.meta.env?.VITE_JAMENDO_CLIENT_ID) || '75868c0d';
 const BASE_URL = 'https://api.jamendo.com/v3.0/tracks/';
 
 function extractGenre(track) {
@@ -15,10 +16,17 @@ function extractGenre(track) {
     return firstGenre.charAt(0).toUpperCase() + firstGenre.slice(1);
 }
 
-export async function fetchTracks(limit = 20, signal = null) {
+export async function fetchTracks(params = {}, signal = null) {
     if (!CLIENT_ID) {
         throw new Error('VITE_JAMENDO_CLIENT_ID не задано у файлі .env');
     }
+
+    const {
+        search = '',
+        genre = 'all',
+        limit = 20,
+        order = 'popularity_total_desc'
+    } = params;
 
     const url = new URL(BASE_URL);
     url.searchParams.set('client_id', CLIENT_ID);
@@ -26,7 +34,20 @@ export async function fetchTracks(limit = 20, signal = null) {
     url.searchParams.set('limit', String(limit));
     url.searchParams.set('include', 'musicinfo');
 
-    const response = await fetch(url, { signal });
+    if (order) {
+        url.searchParams.set('order', order);
+    }
+
+    const trimmedSearch = search.trim();
+    if (trimmedSearch) {
+        url.searchParams.set('namesearch', trimmedSearch);
+    }
+
+    if (genre && genre.toLowerCase() !== 'all') {
+        url.searchParams.set('tags', genre.toLowerCase());
+    }
+
+    const response = await fetch(url, {signal});
 
     if (!response.ok) {
         throw new Error(`Помилка мережі Jamendo API: ${response.status} ${response.statusText}`);
