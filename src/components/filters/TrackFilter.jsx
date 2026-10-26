@@ -1,3 +1,6 @@
+import { useEffect } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+
 const AVAILABLE_GENRES = [
     { value: 'all', label: 'Усі жанри' },
     { value: 'rock', label: 'Rock' },
@@ -18,31 +21,53 @@ const SORT_OPTIONS = [
 ];
 
 function TrackFilter({
-    search = '',
-    onSearchChange,
-    genre = 'all',
-    onGenreChange,
-    limit = 20,
-    onLimitChange,
-    order = 'popularity_total_desc',
-    onOrderChange,
+    initialValues,
+    onFilterChange,
     onReset,
     isLoading = false,
 }) {
+    const {
+        register,
+        control,
+        reset,
+        formState: { errors },
+    } = useForm({
+        defaultValues: initialValues,
+        mode: 'onChange',
+    });
+
+    const formValues = useWatch({ control });
+
+    useEffect(() => {
+        if (formValues) {
+            onFilterChange?.({
+                search: formValues.search || '',
+                genre: formValues.genre || 'all',
+                limit: Number(formValues.limit) || 20,
+                order: formValues.order || 'popularity_total_desc',
+            });
+        }
+    }, [formValues, onFilterChange]);
+
+    const handleReset = () => {
+        reset(initialValues);
+        onReset?.();
+    };
+
     return (
         <div className="widget filter-panel">
             <div className="filter-header">
                 <div>
                     <h3>Панель пошуку та фільтрації</h3>
                     <p className="widget-desc">
-                        Керуйте каталогом за допомогою контрольованої форми та швидкого пошуку
+                        Керуйте каталогом за допомогою react-hook-form з валідацією полів
                     </p>
                 </div>
 
                 <button
                     type="button"
                     className="btn-reset"
-                    onClick={onReset}
+                    onClick={handleReset}
                     title="Скинути всі фільтри до початкових"
                 >
                     Скинути фільтри
@@ -55,19 +80,28 @@ function TrackFilter({
                     <input
                         id="search-input"
                         type="text"
-                        value={search}
-                        onChange={(e) => onSearchChange(e.target.value)}
                         placeholder="Введіть назву треку..."
                         autoComplete="off"
+                        className={errors.search ? 'input-error' : ''}
+                        {...register('search', {
+                            maxLength: {
+                                value: 40,
+                                message: 'Максимум 40 символів',
+                            },
+                            validate: (val) =>
+                                !/[<>{}]/.test(val) || 'Заборонені спецсимволи (<, >, {, })',
+                        })}
                     />
+                    {errors.search && (
+                        <span className="field-error">{errors.search.message}</span>
+                    )}
                 </div>
 
                 <div className="filter-group">
                     <label htmlFor="genre-select">Жанр:</label>
                     <select
                         id="genre-select"
-                        value={genre}
-                        onChange={(e) => onGenreChange(e.target.value)}
+                        {...register('genre')}
                     >
                         {AVAILABLE_GENRES.map((g) => (
                             <option key={g.value} value={g.value}>
@@ -81,8 +115,7 @@ function TrackFilter({
                     <label htmlFor="limit-select">Кількість:</label>
                     <select
                         id="limit-select"
-                        value={limit}
-                        onChange={(e) => onLimitChange(Number(e.target.value))}
+                        {...register('limit', { valueAsNumber: true })}
                     >
                         <option value={10}>10 треків</option>
                         <option value={20}>20 треків</option>
@@ -94,8 +127,7 @@ function TrackFilter({
                     <label htmlFor="order-select">Сортування:</label>
                     <select
                         id="order-select"
-                        value={order}
-                        onChange={(e) => onOrderChange(e.target.value)}
+                        {...register('order')}
                     >
                         {SORT_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value}>

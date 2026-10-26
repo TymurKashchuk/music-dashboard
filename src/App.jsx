@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
-import KpiCard from './components/KpiCard.jsx';
-import Counter from './components/Counter.jsx';
-import ViewToggle from './components/ViewToggle.jsx';
-import GenreChart from './components/GenreChart.jsx';
-import TrackTable from './components/TrackTable.jsx';
-import TrackFilter from './components/TrackFilter.jsx';
+import KpiCard from './components/kpi/KpiCard.jsx';
+import Counter from './components/widgets/Counter.jsx';
+import ViewToggle from './components/widgets/ViewToggle.jsx';
+import GenreChart from './components/charts/GenreChart.jsx';
+import TrackTable from './components/tracks/TrackTable.jsx';
+import TrackFilter from './components/filters/TrackFilter.jsx';
 import { TracksIcon, ArtistIcon, DurationIcon } from './assets/icons.jsx';
 
 import { useTracks } from './hooks/useTracks.js';
@@ -42,10 +42,6 @@ function App() {
 
     const stats = useMemo(() => calculateTrackStats(tracks), [tracks]);
 
-    const handleFilterChange = (field, value) => {
-        setFilters((prev) => ({ ...prev, [field]: value }));
-    };
-
     const handleResetFilters = () => {
         setFilters(INITIAL_FILTERS);
     };
@@ -55,7 +51,7 @@ function App() {
             <header className="dashboard-header">
                 <h1>Музичний Дашборд Jamendo</h1>
                 <p className="dashboard-subtitle">
-                    ЛР3: Контрольовані форми, власні хуки useDebounce та useTracks
+                    ЛР3: Контрольовані форми з react-hook-form, власні хуки useDebounce та useTracks
                 </p>
             </header>
 
@@ -90,14 +86,8 @@ function App() {
 
             <section className="section-filters" aria-label="Панель фільтрів">
                 <TrackFilter
-                    search={filters.search}
-                    onSearchChange={(val) => handleFilterChange('search', val)}
-                    genre={filters.genre}
-                    onGenreChange={(val) => handleFilterChange('genre', val)}
-                    limit={filters.limit}
-                    onLimitChange={(val) => handleFilterChange('limit', val)}
-                    order={filters.order}
-                    onOrderChange={(val) => handleFilterChange('order', val)}
+                    initialValues={INITIAL_FILTERS}
+                    onFilterChange={setFilters}
                     onReset={handleResetFilters}
                     isLoading={isLoading}
                 />

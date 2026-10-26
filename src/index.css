@@ -451,3 +451,15 @@ button:disabled {
     align-items: center;
     gap: 6px;
 }
+
+
+.filter-group input.input-error {
+    border-color: #ff5252;
+    box-shadow: 0 0 0 2px rgba(255, 82, 82, 0.2);
+}
+
+.field-error {
+    color: #ff5252;
+    font-size: 11px;
+    margin-top: 2px;
+}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import TrackFilter from './TrackFilter.jsx';
+import TrackFilter from '../filters/TrackFilter.jsx';
 import TrackItem from './TrackItem.jsx';
 
 function TrackList({ tracks = [], viewMode = 'comfortable' }) {
