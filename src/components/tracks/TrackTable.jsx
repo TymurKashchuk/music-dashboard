@@ -1,5 +1,5 @@
-import { formatDuration } from '../utils/formatters.js';
-import { SortIcon } from '../assets/icons.jsx';
+import { formatDuration } from '../../utils/formatters.js';
+import { SortIcon } from '../../assets/icons.jsx';
 
 function TrackTable({
     tracks = [],

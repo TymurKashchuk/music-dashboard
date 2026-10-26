@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import TrackFilter from './TrackFilter.jsx';
 import TrackItem from './TrackItem.jsx';
 
 function TrackList({ tracks = [], viewMode = 'comfortable' }) {
@@ -19,11 +18,20 @@ function TrackList({ tracks = [], viewMode = 'comfortable' }) {
                     <p className="widget-desc">Показано: {filteredTracks.length} з {tracks.length} треків</p>
                 </div>
 
-                <TrackFilter
-                    genres={genres}
-                    selectedGenre={selectedGenre}
-                    onGenreChange={setSelectedGenre}
-                />
+                <div className="filter-group">
+                    <label htmlFor="simple-genre-filter">Фільтр: </label>
+                    <select
+                        id="simple-genre-filter"
+                        value={selectedGenre}
+                        onChange={(e) => setSelectedGenre(e.target.value)}
+                    >
+                        {genres.map((g) => (
+                            <option key={g} value={g}>
+                                {g}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             <div className={`tracks-list ${viewMode === 'compact' ? 'compact' : ''}`}>

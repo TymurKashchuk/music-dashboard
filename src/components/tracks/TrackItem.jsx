@@ -1,4 +1,4 @@
-import { formatDuration } from '../utils/formatters.js';
+import { formatDuration } from '../../utils/formatters.js';
 
 function TrackItem({ track }) {
     return (
