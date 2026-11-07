@@ -1,3 +1,4 @@
+import { useNavigate, Link } from 'react-router-dom';
 import { formatDuration } from '../../utils/formatters.js';
 import { SortIcon } from '../../assets/icons.jsx';
 
@@ -8,6 +9,8 @@ function TrackTable({
     onSortChange,
     viewMode = 'comfortable',
 }) {
+    const navigate = useNavigate();
+
     function handleSort(key) {
         if (sortKey === key) {
             onSortChange(key, sortDirection === 'asc' ? 'desc' : 'asc');
@@ -46,9 +49,19 @@ function TrackTable({
                     </thead>
                     <tbody>
                         {tracks.map((track) => (
-                            <tr key={track.id}>
+                            <tr
+                                key={track.id}
+                                onClick={() => navigate(`/track/${track.id}`)}
+                                style={{ cursor: 'pointer' }}
+                            >
                                 <td>
-                                    <strong className="track-title">{track.title}</strong>
+                                    <Link
+                                        to={`/track/${track.id}`}
+                                        className="track-title-link"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        {track.title}
+                                    </Link>
                                 </td>
                                 <td>{track.artist}</td>
                                 <td>{track.album}</td>

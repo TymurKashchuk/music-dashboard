@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState } from 'react';
-import { fetchTracks } from '../services/tracksApi.js';
+import { fetchTracks, fetchTrackById } from '../services/tracksApi.js';
 
 export const RequestStatus = Object.freeze({
     IDLE: 'idle',
@@ -77,6 +77,73 @@ export function useTracks(params = {}) {
         refetch: () => {
             setState((prev) => ({ ...prev, status: RequestStatus.LOADING, error: null }));
             loadTracks();
+        },
+    };
+}
+
+export function useTrack(id) {
+    const [state, setState] = useState({
+        track: null,
+        status: id ? RequestStatus.LOADING : RequestStatus.EMPTY,
+        error: null,
+    });
+
+    const [prevId, setPrevId] = useState(id);
+    if (prevId !== id) {
+        setPrevId(id);
+        setState({
+            track: null,
+            status: id ? RequestStatus.LOADING : RequestStatus.EMPTY,
+            error: null,
+        });
+    }
+
+    const loadTrack = useCallback((signal) => {
+        if (!id) return;
+
+        fetchTrackById(id, signal)
+            .then((loadedTrack) => {
+                setState({
+                    track: loadedTrack,
+                    status: loadedTrack ? RequestStatus.SUCCESS : RequestStatus.EMPTY,
+                    error: null,
+                });
+            })
+            .catch((err) => {
+                if (err.name === 'AbortError') return;
+                setState({
+                    track: null,
+                    status: RequestStatus.ERROR,
+                    error: err.message || 'Помилка завантаження треку',
+                });
+            });
+    }, [id]);
+
+    useEffect(() => {
+        if (!id) return;
+
+        const controller = new AbortController();
+        loadTrack(controller.signal);
+
+        return () => {
+            controller.abort();
+        };
+    }, [id, loadTrack]);
+
+    const isLoading = state.status === RequestStatus.LOADING;
+
+    return {
+        track: state.track,
+        status: state.status,
+        error: state.error,
+        loading: isLoading,
+        isLoading,
+        isSuccess: state.status === RequestStatus.SUCCESS,
+        isEmpty: state.status === RequestStatus.EMPTY,
+        isError: state.status === RequestStatus.ERROR,
+        refetch: () => {
+            setState((prev) => ({ ...prev, status: RequestStatus.LOADING, error: null }));
+            loadTrack();
         },
     };
 }

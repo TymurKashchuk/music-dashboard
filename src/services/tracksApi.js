@@ -23,11 +23,55 @@ function extractGenre(track) {
     return firstGenre.charAt(0).toUpperCase() + firstGenre.slice(1);
 }
 
-export async function fetchTracks(params = {}, signal = null) {
+function normalizeTrack(track) {
+    return {
+        id: String(track.id),
+        title: track.name,
+        artist: track.artist_name,
+        album: track.album_name || 'Сингл',
+        duration: Number(track.duration) || 0,
+        genre: extractGenre(track),
+        image: track.image || track.album_image || '',
+        audio: track.audio || '',
+        audiodownload: track.audiodownload || '',
+        license: track.license_ccurl || 'Creative Commons',
+        releaseDate: track.releasedate || 'Не вказано',
+        shareUrl: track.shareurl || '',
+    };
+}
+
+async function requestJamendo(params = {}, signal = null) {
     if (!CLIENT_ID) {
         throw new Error('VITE_JAMENDO_CLIENT_ID не задано у файлі .env');
     }
 
+    const url = new URL(BASE_URL);
+    url.searchParams.set('client_id', CLIENT_ID);
+    url.searchParams.set('format', 'json');
+    url.searchParams.set('include', 'musicinfo');
+
+    for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined && value !== null && value !== '') {
+            url.searchParams.set(key, String(value));
+        }
+    }
+
+    const response = await fetch(url, { signal });
+
+    if (!response.ok) {
+        throw new Error(`Помилка мережі Jamendo API: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (data.headers && data.headers.status === 'failed') {
+        throw new Error(data.headers.error_message || 'Помилка API Jamendo');
+    }
+
+    return data.results || [];
+}
+
+export async function fetchTracks(params = {}, signal = null) {
     const {
         search = '',
         genre = 'all',
@@ -40,54 +84,21 @@ export async function fetchTracks(params = {}, signal = null) {
     const hasGenre = Boolean(genre && genre.toLowerCase() !== 'all');
     const targetGenre = hasGenre ? genre.toLowerCase() : null;
 
-    async function queryJamendo(paramName, paramValue, withTag = true) {
-        const url = new URL(BASE_URL);
-        url.searchParams.set('client_id', CLIENT_ID);
-        url.searchParams.set('format', 'json');
-        url.searchParams.set('include', 'musicinfo');
-
-        if (hasSearch) {
-            url.searchParams.set(paramName, paramValue);
-            url.searchParams.set('limit', String(Math.max(Number(limit) * 2, 40)));
-            if (withTag && hasGenre) {
-                url.searchParams.set('tags', targetGenre);
-            }
-        } else {
-            url.searchParams.set('limit', String(limit));
-            if (order) {
-                url.searchParams.set('order', order);
-            }
-            if (hasGenre) {
-                url.searchParams.set('tags', targetGenre);
-            }
-        }
-
-        const response = await fetch(url, { signal });
-
-        if (!response.ok) {
-            throw new Error(`Помилка мережі Jamendo API: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        if (data.headers && data.headers.status === 'failed') {
-            throw new Error(data.headers.error_message || 'Помилка API Jamendo');
-        }
-
-        return data.results || [];
-    }
-
     let results;
 
     if (hasSearch) {
-        results = await queryJamendo('search', trimmedSearch, true);
+        results = await requestJamendo({
+            search: trimmedSearch,
+            limit: Math.max(Number(limit) * 2, 40),
+            ...(hasGenre ? { tags: targetGenre } : {}),
+        }, signal);
 
         if (results.length === 0 && hasGenre) {
-            results = await queryJamendo('search', trimmedSearch, false);
+            results = await requestJamendo({ search: trimmedSearch }, signal);
         }
 
         if (results.length === 0) {
-            results = await queryJamendo('namesearch', trimmedSearch, false);
+            results = await requestJamendo({ namesearch: trimmedSearch }, signal);
         }
 
         if (hasGenre) {
@@ -121,19 +132,22 @@ export async function fetchTracks(params = {}, signal = null) {
 
         results = results.slice(0, Number(limit));
     } else {
-        results = await queryJamendo(null, null, true);
+        results = await requestJamendo({
+            limit,
+            order,
+            ...(hasGenre ? { tags: targetGenre } : {}),
+        }, signal);
     }
 
-    return results.map((track) => ({
-        id: String(track.id),
-        title: track.name,
-        artist: track.artist_name,
-        album: track.album_name || 'Сингл',
-        duration: Number(track.duration) || 0,
-        genre: extractGenre(track),
-        image: track.image || track.album_image,
-        audio: track.audio,
-        audiodownload: track.audiodownload,
-        license: track.license_ccurl || '—',
-    }));
+    return results.map(normalizeTrack);
+}
+
+export async function fetchTrackById(id, signal = null) {
+    const results = await requestJamendo({ id }, signal);
+
+    if (results.length === 0) {
+        return null;
+    }
+
+    return normalizeTrack(results[0]);
 }
