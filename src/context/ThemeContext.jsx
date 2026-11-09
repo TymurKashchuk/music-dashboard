@@ -9,7 +9,6 @@ export function ThemeProvider({ children }) {
     });
 
     useEffect(() => {
-        document.body.setAttribute('data-theme', theme);
         localStorage.setItem('app-theme', theme);
     }, [theme]);
 
@@ -19,7 +18,9 @@ export function ThemeProvider({ children }) {
 
     return (
         <ThemeContext.Provider value={{ theme, toggleTheme, isDark: theme === 'dark' }}>
-            {children}
+            <div className="app-theme-wrapper" data-theme={theme}>
+                {children}
+            </div>
         </ThemeContext.Provider>
     );
 }
