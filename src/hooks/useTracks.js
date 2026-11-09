@@ -1,19 +1,8 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useCallback } from 'react';
+import { useAsync, RequestStatus } from './useAsync.js';
 import { fetchTracks, fetchTrackById } from '../services/tracksApi.js';
 
-export const RequestStatus = Object.freeze({
-    IDLE: 'idle',
-    LOADING: 'loading',
-    SUCCESS: 'success',
-    EMPTY: 'empty',
-    ERROR: 'error',
-});
-
-const initialTracksState = {
-    tracks: [],
-    status: RequestStatus.LOADING,
-    error: null,
-};
+export { RequestStatus };
 
 export function useTracks(params = {}) {
     const {
@@ -23,127 +12,30 @@ export function useTracks(params = {}) {
         order = 'popularity_total_desc',
     } = params;
 
-    const [state, setState] = useState(initialTracksState);
+    const fetchFn = useCallback(
+        (signal) => fetchTracks({ search, genre, limit, order }, signal),
+        [search, genre, limit, order]
+    );
 
-    const currentKey = `${search}_${genre}_${limit}_${order}`;
-    const [prevKey, setPrevKey] = useState(currentKey);
-
-    if (prevKey !== currentKey) {
-        setPrevKey(currentKey);
-        setState((prev) => ({ ...prev, status: RequestStatus.LOADING, error: null }));
-    }
-
-    const loadTracks = useCallback((signal) => {
-        fetchTracks({ search, genre, limit, order }, signal)
-            .then((loadedTracks) => {
-                setState({
-                    tracks: loadedTracks,
-                    status: loadedTracks.length === 0 ? RequestStatus.EMPTY : RequestStatus.SUCCESS,
-                    error: null,
-                });
-            })
-            .catch((err) => {
-                if (err.name === 'AbortError') return;
-                setState({
-                    tracks: [],
-                    status: RequestStatus.ERROR,
-                    error: err.message || 'Помилка завантаження даних',
-                });
-            });
-    }, [search, genre, limit, order]);
-
-    useEffect(() => {
-        const controller = new AbortController();
-
-        loadTracks(controller.signal);
-
-        return () => {
-            controller.abort();
-        };
-    }, [loadTracks]);
-
-    const isLoading = state.status === RequestStatus.LOADING;
+    const asyncResult = useAsync(fetchFn, true);
 
     return {
-        data: state.tracks,
-        tracks: state.tracks,
-        status: state.status,
-        error: state.error,
-        loading: isLoading,
-        isLoading: isLoading,
-        isSuccess: state.status === RequestStatus.SUCCESS,
-        isEmpty: state.status === RequestStatus.EMPTY,
-        isError: state.status === RequestStatus.ERROR,
-        refetch: () => {
-            setState((prev) => ({ ...prev, status: RequestStatus.LOADING, error: null }));
-            loadTracks();
-        },
+        ...asyncResult,
+        data: asyncResult.data || [],
+        tracks: asyncResult.data || [],
     };
 }
 
 export function useTrack(id) {
-    const [state, setState] = useState({
-        track: null,
-        status: id ? RequestStatus.LOADING : RequestStatus.EMPTY,
-        error: null,
-    });
+    const fetchFn = useCallback(
+        (signal) => (id ? fetchTrackById(id, signal) : Promise.resolve(null)),
+        [id]
+    );
 
-    const [prevId, setPrevId] = useState(id);
-    if (prevId !== id) {
-        setPrevId(id);
-        setState({
-            track: null,
-            status: id ? RequestStatus.LOADING : RequestStatus.EMPTY,
-            error: null,
-        });
-    }
-
-    const loadTrack = useCallback((signal) => {
-        if (!id) return;
-
-        fetchTrackById(id, signal)
-            .then((loadedTrack) => {
-                setState({
-                    track: loadedTrack,
-                    status: loadedTrack ? RequestStatus.SUCCESS : RequestStatus.EMPTY,
-                    error: null,
-                });
-            })
-            .catch((err) => {
-                if (err.name === 'AbortError') return;
-                setState({
-                    track: null,
-                    status: RequestStatus.ERROR,
-                    error: err.message || 'Помилка завантаження треку',
-                });
-            });
-    }, [id]);
-
-    useEffect(() => {
-        if (!id) return;
-
-        const controller = new AbortController();
-        loadTrack(controller.signal);
-
-        return () => {
-            controller.abort();
-        };
-    }, [id, loadTrack]);
-
-    const isLoading = state.status === RequestStatus.LOADING;
+    const asyncResult = useAsync(fetchFn, Boolean(id));
 
     return {
-        track: state.track,
-        status: state.status,
-        error: state.error,
-        loading: isLoading,
-        isLoading,
-        isSuccess: state.status === RequestStatus.SUCCESS,
-        isEmpty: state.status === RequestStatus.EMPTY,
-        isError: state.status === RequestStatus.ERROR,
-        refetch: () => {
-            setState((prev) => ({ ...prev, status: RequestStatus.LOADING, error: null }));
-            loadTrack();
-        },
+        ...asyncResult,
+        track: asyncResult.data,
     };
 }

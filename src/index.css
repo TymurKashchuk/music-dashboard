@@ -6,10 +6,22 @@
 
 body {
     font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+}
+
+.app-theme-wrapper {
+    min-height: 100vh;
     background-color: #121212;
     color: #ffffff;
     padding: 30px 15px;
-    line-height: 1.5;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+[data-theme="light"].app-theme-wrapper {
+    background-color: #f5f6f8;
+    color: #1a1a1a;
 }
 
 .dashboard-container {
@@ -495,70 +507,70 @@ button:disabled {
     gap: 6px;
 }
 
-body[data-theme="light"] {
+[data-theme="light"] {
     background-color: #f5f6f8;
     color: #1a1a1a;
 }
 
-body[data-theme="light"] .widget,
-body[data-theme="light"] .kpi-card {
+[data-theme="light"] .widget,
+[data-theme="light"] .kpi-card {
     background-color: #ffffff;
     border-color: #e2e5ea;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
-body[data-theme="light"] .widget-desc,
-body[data-theme="light"] .kpi-title,
-body[data-theme="light"] .dashboard-subtitle,
-body[data-theme="light"] .filter-box label,
-body[data-theme="light"] .genre-info,
-body[data-theme="light"] .tracks-table th,
-body[data-theme="light"] .status-box {
+[data-theme="light"] .widget-desc,
+[data-theme="light"] .kpi-title,
+[data-theme="light"] .dashboard-subtitle,
+[data-theme="light"] .filter-box label,
+[data-theme="light"] .genre-info,
+[data-theme="light"] .tracks-table th,
+[data-theme="light"] .status-box {
     color: #606770;
 }
 
-body[data-theme="light"] .kpi-tag {
+[data-theme="light"] .kpi-tag {
     background-color: #e9ecef;
     color: #495057;
 }
 
-body[data-theme="light"] .track-item {
+[data-theme="light"] .track-item {
     background-color: #f8f9fa;
 }
 
-body[data-theme="light"] .tracks-table th,
-body[data-theme="light"] .tracks-table td {
+[data-theme="light"] .tracks-table th,
+[data-theme="light"] .tracks-table td {
     border-bottom-color: #e9ecef;
 }
 
-body[data-theme="light"] .tracks-table tbody tr:hover {
+[data-theme="light"] .tracks-table tbody tr:hover {
     background-color: #f1f3f5;
 }
 
-body[data-theme="light"] button {
+[data-theme="light"] button {
     background-color: #e9ecef;
     color: #212529;
     border-color: #ced4da;
 }
 
-body[data-theme="light"] button:hover:not(:disabled) {
+[data-theme="light"] button:hover:not(:disabled) {
     background-color: #dee2e6;
 }
 
-body[data-theme="light"] .filter-group input,
-body[data-theme="light"] .filter-group select {
+[data-theme="light"] .filter-group input,
+[data-theme="light"] .filter-group select {
     background-color: #ffffff;
     color: #212529;
     border-color: #ced4da;
 }
 
-body[data-theme="light"] .status-box.error {
+[data-theme="light"] .status-box.error {
     background-color: #ffebee;
     border-color: #ef9a9a;
     color: #c62828;
 }
 
-body[data-theme="light"] .theme-toggle-btn {
+[data-theme="light"] .theme-toggle-btn {
     background-color: #ffffff;
     color: #212529;
     border-color: #ced4da;
@@ -721,44 +733,44 @@ body[data-theme="light"] .theme-toggle-btn {
 }
 
 /* Адаптація нових елементів під світлу тему */
-body[data-theme="light"] .btn-back,
-body[data-theme="light"] .theme-link {
+[data-theme="light"] .btn-back,
+[data-theme="light"] .theme-link {
     color: #0969da;
 }
 
-body[data-theme="light"] .btn-back:hover,
-body[data-theme="light"] .theme-link:hover {
+[data-theme="light"] .btn-back:hover,
+[data-theme="light"] .theme-link:hover {
     color: #0550ae;
 }
 
-body[data-theme="light"] .track-title-link:hover {
+[data-theme="light"] .track-title-link:hover {
     color: #1a7f37;
 }
 
-body[data-theme="light"] .track-details-artist {
+[data-theme="light"] .track-details-artist {
     color: #24292f;
 }
 
-body[data-theme="light"] .track-details-meta,
-body[data-theme="light"] .status-tip {
+[data-theme="light"] .track-details-meta,
+[data-theme="light"] .status-tip {
     color: #57606a;
 }
 
-body[data-theme="light"] .track-player-box {
+[data-theme="light"] .track-player-box {
     background-color: #f6f8fa;
     border-color: #d0d7de;
 }
 
-body[data-theme="light"] .track-details-actions {
+[data-theme="light"] .track-details-actions {
     border-top-color: #d0d7de;
 }
 
-body[data-theme="light"] .btn-secondary {
+[data-theme="light"] .btn-secondary {
     background-color: #f6f8fa;
     color: #24292f;
     border-color: #d0d7de;
 }
 
-body[data-theme="light"] .btn-secondary:hover {
+[data-theme="light"] .btn-secondary:hover {
     background-color: #f3f4f6;
 }
