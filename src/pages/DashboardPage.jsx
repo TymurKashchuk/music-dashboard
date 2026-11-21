@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 import KpiCard from '../components/kpi/KpiCard.jsx';
 import Counter from '../components/widgets/Counter.jsx';
 import ViewToggle from '../components/widgets/ViewToggle.jsx';
@@ -9,12 +10,14 @@ import { TracksIcon, ArtistIcon, DurationIcon } from '../assets/icons.jsx';
 
 import { useTracks } from '../hooks/useTracks.js';
 import { useDebounce } from '../hooks/useDebounce.js';
-import { useFilters } from '../hooks/useFilters.js';
+import { selectFilters } from '../store/slices/filtersSlice.js';
+import { selectViewMode } from '../store/slices/uiSlice.js';
 import { sortTracks } from '../utils/sorting.js';
 import { calculateTrackStats } from '../utils/formatters.js';
 
 function DashboardPage() {
-    const { filters, setFilters, resetFilters, INITIAL_FILTERS } = useFilters();
+    const filters = useSelector(selectFilters);
+    const viewMode = useSelector(selectViewMode);
 
     const debouncedSearch = useDebounce(filters.search, 400);
 
@@ -25,7 +28,6 @@ function DashboardPage() {
         order: filters.order,
     });
 
-    const [viewMode, setViewMode] = useState('comfortable');
     const [sortKey, setSortKey] = useState('title');
     const [sortDirection, setSortDirection] = useState('asc');
 
@@ -68,17 +70,12 @@ function DashboardPage() {
             </section>
 
             <section className="section-filters" aria-label="Панель фільтрів">
-                <TrackFilter
-                    initialValues={INITIAL_FILTERS}
-                    onFilterChange={setFilters}
-                    onReset={resetFilters}
-                    isLoading={isLoading}
-                />
+                <TrackFilter isLoading={isLoading} />
             </section>
 
             <section className="section-widgets" aria-label="Інтерактивні віджети">
                 <Counter initialValue={0} title="Лічильник прослуховувань" />
-                <ViewToggle onViewChange={setViewMode} />
+                <ViewToggle />
             </section>
 
             <section className="section-main" aria-label="Каталог треків">

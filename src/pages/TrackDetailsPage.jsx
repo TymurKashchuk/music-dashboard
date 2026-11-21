@@ -1,10 +1,16 @@
 import { useParams, Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTrack } from '../hooks/useTracks.js';
 import { formatDuration } from '../utils/formatters.js';
+import { HeartIcon } from '../assets/icons.jsx';
+import { selectFavoriteIds, toggleFavorite } from '../store/slices/favoritesSlice.js';
 
 function TrackDetailsPage() {
     const { id } = useParams();
     const { track, isLoading, isError, isEmpty, isSuccess, error } = useTrack(id);
+    const dispatch = useDispatch();
+    const favoriteIds = useSelector(selectFavoriteIds);
+    const isFavorite = track ? favoriteIds.includes(String(track.id)) : false;
 
     return (
         <div className="track-details-container">
@@ -80,6 +86,15 @@ function TrackDetailsPage() {
                     )}
 
                     <div className="track-details-actions">
+                        <button
+                            type="button"
+                            onClick={() => dispatch(toggleFavorite(track.id))}
+                            className={`btn-action ${isFavorite ? 'btn-favorite-active' : 'btn-secondary'}`}
+                        >
+                            <HeartIcon filled={isFavorite} />
+                            <span>{isFavorite ? 'В обраному' : 'Додати в обране'}</span>
+                        </button>
+
                         {track.audiodownload && (
                             <a
                                 href={track.audiodownload}

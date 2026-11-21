@@ -8,9 +8,10 @@ export const RequestStatus = Object.freeze({
     ERROR: 'error',
 });
 
-function handleAsync(promise, setState) {
+function handleAsync(promise, setState, signal = null) {
     return promise
         .then((result) => {
+            if (signal?.aborted) return result;
             const isEmpty = !result || (Array.isArray(result) && result.length === 0);
             setState({
                 data: result,
@@ -20,7 +21,7 @@ function handleAsync(promise, setState) {
             return result;
         })
         .catch((err) => {
-            if (err.name === 'AbortError') return;
+            if (signal?.aborted || err.name === 'AbortError') return;
             setState({
                 data: null,
                 status: RequestStatus.ERROR,
@@ -36,9 +37,9 @@ export function useAsync(asyncFn, immediate = true) {
         error: null,
     });
 
-    const [prevFn, setPrevFn] = useState(asyncFn);
+    const [prevFn, setPrevFn] = useState(() => asyncFn);
     if (prevFn !== asyncFn) {
-        setPrevFn(asyncFn);
+        setPrevFn(() => asyncFn);
         if (immediate) {
             setState({
                 data: null,
@@ -52,7 +53,7 @@ export function useAsync(asyncFn, immediate = true) {
         if (!immediate) return;
 
         const controller = new AbortController();
-        handleAsync(asyncFn(controller.signal), setState);
+        handleAsync(asyncFn(controller.signal), setState, controller.signal);
 
         return () => {
             controller.abort();
@@ -64,7 +65,7 @@ export function useAsync(asyncFn, immediate = true) {
     const refetch = useCallback(() => {
         const controller = new AbortController();
         setState((prev) => ({ ...prev, status: RequestStatus.LOADING, error: null }));
-        return handleAsync(asyncFn(controller.signal), setState);
+        return handleAsync(asyncFn(controller.signal), setState, controller.signal);
     }, [asyncFn]);
 
     return {
