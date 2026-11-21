@@ -1,35 +1,56 @@
-function GenreChart({ tracks = [] }) {
-    const genreCounts = tracks.reduce((acc, t) => {
-        if (t.genre) {
-            acc[t.genre] = (acc[t.genre] || 0) + 1;
-        }
-        return acc;
-    }, {});
+import { useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectChartType, setChartType } from '../../store/slices/uiSlice.js';
+import { selectIsDark } from '../../store/slices/themeSlice.js';
+import GenreChartRenderer from './GenreChartRenderer.jsx';
 
-    const entries = Object.entries(genreCounts);
-    const max = Math.max(...entries.map(([, c]) => c), 1);
+const CHART_TYPES = [
+    { value: 'bar', label: 'Стовпчиковий' },
+    { value: 'line', label: 'Лінійний' },
+];
+
+function GenreChart({ tracks = [] }) {
+    const dispatch = useDispatch();
+    const chartType = useSelector(selectChartType);
+    const isDark = useSelector(selectIsDark);
+
+    const chartData = useMemo(() => {
+        const counts = tracks.reduce((acc, track) => {
+            const genre = track.genre || 'Other';
+            acc[genre] = (acc[genre] || 0) + 1;
+            return acc;
+        }, {});
+
+        return Object.entries(counts)
+            .map(([genre, count]) => ({ genre, count }))
+            .sort((a, b) => b.count - a.count);
+    }, [tracks]);
 
     return (
         <div className="widget">
-            <h3>Розподіл за жанрами</h3>
-            <p className="widget-desc">Кількість треків у кожному жанрі</p>
+            <div className="chart-header">
+                <div>
+                    <h3>Розподіл за жанрами</h3>
+                    <p className="widget-desc">
+                        Кількість треків у поточній вибірці (реагує на активні фільтри)
+                    </p>
+                </div>
 
-            <div className="genre-bars">
-                {entries.map(([genre, count]) => (
-                    <div key={genre} className="genre-row">
-                        <div className="genre-info">
-                            <span>{genre}</span>
-                            <strong>{count}</strong>
-                        </div>
-                        <div className="bar-track">
-                            <div
-                                className="bar-fill"
-                                style={{ width: `${(count / max) * 100}%` }}
-                            />
-                        </div>
-                    </div>
-                ))}
+                <div className="chart-switcher" role="group" aria-label="Тип графіка">
+                    {CHART_TYPES.map((item) => (
+                        <button
+                            key={item.value}
+                            type="button"
+                            className={`chart-switch-btn ${chartType === item.value ? 'active' : ''}`}
+                            onClick={() => dispatch(setChartType(item.value))}
+                        >
+                            {item.label}
+                        </button>
+                    ))}
+                </div>
             </div>
+
+            <GenreChartRenderer data={chartData} type={chartType} isDark={isDark} />
         </div>
     );
 }
