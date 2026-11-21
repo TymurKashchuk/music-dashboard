@@ -1,13 +1,10 @@
-import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectViewMode, toggleViewMode } from '../../store/slices/uiSlice.js';
 
-function ViewToggle({ onViewChange }) {
-    const [isCompact, setIsCompact] = useState(false);
-
-    function handleToggle() {
-        const nextMode = !isCompact;
-        setIsCompact(nextMode);
-        onViewChange?.(nextMode ? 'compact' : 'comfortable');
-    }
+function ViewToggle() {
+    const viewMode = useSelector(selectViewMode);
+    const dispatch = useDispatch();
+    const isCompact = viewMode === 'compact';
 
     return (
         <div className="widget">
@@ -20,7 +17,7 @@ function ViewToggle({ onViewChange }) {
                 <button
                     type="button"
                     className="toggle-btn"
-                    onClick={handleToggle}
+                    onClick={() => dispatch(toggleViewMode())}
                 >
                     {isCompact ? 'Перемкнути на зручний' : 'Перемкнути на компактний'}
                 </button>

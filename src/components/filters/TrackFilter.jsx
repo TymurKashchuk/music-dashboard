@@ -1,5 +1,12 @@
 import { useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+    INITIAL_FILTERS,
+    resetFilters,
+    selectFilters,
+    setFilters,
+} from '../../store/slices/filtersSlice.js';
 
 const AVAILABLE_GENRES = [
     { value: 'all', label: 'Усі жанри' },
@@ -20,19 +27,17 @@ const SORT_OPTIONS = [
     { value: 'duration_asc', label: 'Найкоротші спочатку' },
 ];
 
-function TrackFilter({
-    initialValues,
-    onFilterChange,
-    onReset,
-    isLoading = false,
-}) {
+function TrackFilter({ isLoading = false }) {
+    const dispatch = useDispatch();
+    const filters = useSelector(selectFilters);
+
     const {
         register,
         control,
         reset,
         formState: { errors },
     } = useForm({
-        defaultValues: initialValues,
+        defaultValues: filters,
         mode: 'onChange',
     });
 
@@ -40,18 +45,18 @@ function TrackFilter({
 
     useEffect(() => {
         if (formValues) {
-            onFilterChange?.({
+            dispatch(setFilters({
                 search: formValues.search || '',
                 genre: formValues.genre || 'all',
                 limit: Number(formValues.limit) || 20,
                 order: formValues.order || 'popularity_total_desc',
-            });
+            }));
         }
-    }, [formValues, onFilterChange]);
+    }, [formValues, dispatch]);
 
     const handleReset = () => {
-        reset(initialValues);
-        onReset?.();
+        reset(INITIAL_FILTERS);
+        dispatch(resetFilters());
     };
 
     return (

@@ -137,6 +137,13 @@ export async function fetchTracks(params = {}, signal = null) {
             order,
             ...(hasGenre ? { tags: targetGenre } : {}),
         }, signal);
+
+        if (results.length === 0 && order) {
+            results = await requestJamendo({
+                limit,
+                ...(hasGenre ? { tags: targetGenre } : {}),
+            }, signal);
+        }
     }
 
     return results.map(normalizeTrack);
