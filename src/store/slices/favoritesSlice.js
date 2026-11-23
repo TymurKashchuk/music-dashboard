@@ -1,16 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-function loadFavorites() {
-    try {
-        const saved = localStorage.getItem('favorites');
-        return saved ? JSON.parse(saved) : [];
-    } catch {
-        return [];
-    }
-}
-
 const initialState = {
-    ids: loadFavorites(),
+    ids: [],
 };
 
 const favoritesSlice = createSlice({
@@ -24,7 +15,6 @@ const favoritesSlice = createSlice({
             } else {
                 state.ids.push(trackId);
             }
-            localStorage.setItem('favorites', JSON.stringify(state.ids));
         },
     },
 });

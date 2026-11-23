@@ -1,8 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-    chartType: localStorage.getItem('chartType') || 'bar',
-    viewMode: localStorage.getItem('viewMode') || 'comfortable',
+    chartType: 'bar',
+    viewMode: 'comfortable',
 };
 
 const uiSlice = createSlice({
@@ -11,11 +11,9 @@ const uiSlice = createSlice({
     reducers: {
         setChartType: (state, action) => {
             state.chartType = action.payload;
-            localStorage.setItem('chartType', state.chartType);
         },
         toggleViewMode: (state) => {
             state.viewMode = state.viewMode === 'comfortable' ? 'compact' : 'comfortable';
-            localStorage.setItem('viewMode', state.viewMode);
         },
     },
 });
